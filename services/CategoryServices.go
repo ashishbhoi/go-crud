@@ -10,29 +10,47 @@ type categoryModel struct {
 	ID           uint    `json:"id"`
 	Title        string  `json:"title"`
 	Description  string  `json:"description"`
-	TotalExpense float64 `json:"total_expense"`
+	TotalExpense float32 `json:"total_expense"`
 }
 
 func GetAllCategories(context *gin.Context) {
 	context.Header("Content-Type", "application/json")
 	var categories []models.Category
 	user, _ := context.Get("user")
-	models.DB.Where("user_id = ?", user.(models.PublicUser).ID).Find(&categories)
+	userId := user.(models.PublicUser).ID
+	models.DB.Where("user_id = ?", userId).Find(&categories)
 	var displayCategories []categoryModel
 	for _, category := range categories {
-		displayCategory := categoryModel{category.ID, category.Title, category.Description, 0.0}
+
+		var totalExpense float32 = 0.0
+		var transactions []models.Transaction
+		models.DB.Where("category_id = ? AND user_id = ?", category.ID, userId).Find(&transactions)
+		for _, transaction := range transactions {
+			totalExpense += transaction.Amount
+		}
+
+		displayCategory := categoryModel{category.ID, category.Title, category.Description, totalExpense}
 		displayCategories = append(displayCategories, displayCategory)
 	}
 	context.JSON(http.StatusOK, gin.H{"categories": displayCategories})
 }
 
-func GetCategory(context *gin.Context) {
+func GetCategoryById(context *gin.Context) {
 	context.Header("Content-Type", "application/json")
 	var category models.Category
-	categoryId := context.Param("id")
+	categoryId := context.Param("categoryId")
 	user, _ := context.Get("user")
-	models.DB.Where("id = ? AND user_id = ?", categoryId, user.(models.PublicUser).ID).First(&category)
-	displayCategory := categoryModel{category.ID, category.Title, category.Description, 0.0}
+	userId := user.(models.PublicUser).ID
+	models.DB.Where("id = ? AND user_id = ?", categoryId, userId).First(&category)
+
+	var totalExpense float32 = 0.0
+	var transactions []models.Transaction
+	models.DB.Where("category_id = ? AND user_id = ?", category.ID, userId).Find(&transactions)
+	for _, transaction := range transactions {
+		totalExpense += transaction.Amount
+	}
+
+	displayCategory := categoryModel{category.ID, category.Title, category.Description, totalExpense}
 	context.JSON(http.StatusOK, gin.H{"category": displayCategory})
 }
 
@@ -54,9 +72,10 @@ func CreateCategory(context *gin.Context) {
 func UpdateCategory(context *gin.Context) {
 	context.Header("Content-Type", "application/json")
 	var category models.Category
-	categoryId := context.Param("id")
+	categoryId := context.Param("categoryId")
 	user, _ := context.Get("user")
-	models.DB.Where("id = ? AND user_id = ?", categoryId, user.(models.PublicUser).ID).First(&category)
+	userId := user.(models.PublicUser).ID
+	models.DB.Where("id = ? AND user_id = ?", categoryId, userId).First(&category)
 	var newCategory models.Category
 	err := context.BindJSON(&newCategory)
 	if err != nil {
@@ -76,13 +95,15 @@ func UpdateCategory(context *gin.Context) {
 func DeleteCategory(context *gin.Context) {
 	context.Header("Content-Type", "application/json")
 	var category models.Category
-	categoryId := context.Param("id")
+	categoryId := context.Param("categoryId")
 	user, _ := context.Get("user")
-	models.DB.Where("id = ? AND user_id = ?", categoryId, user.(models.PublicUser).ID).First(&category)
+	userId := user.(models.PublicUser).ID
+	models.DB.Where("id = ? AND user_id = ?", categoryId, userId).First(&category)
 	if category.ID == 0 {
 		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Category Not Found", "success": false})
 		return
 	}
+	DeleteAllTransactions(userId, category.ID)
 	models.DB.Delete(&category)
 	context.JSON(http.StatusOK, gin.H{"message": "Category Deleted Successfully", "success": true})
 }
