@@ -8,8 +8,8 @@ import (
 
 func CategoryRoutes(r *gin.Engine) {
 	r.GET("/api/categories", middlewares.AuthFilter, services.GetAllCategories)
-	r.GET("/api/categories/:id", middlewares.AuthFilter, services.GetCategory)
+	r.GET("/api/categories/:categoryId", middlewares.AuthFilter, services.GetCategoryById)
 	r.POST("/api/categories", middlewares.AuthFilter, services.CreateCategory)
-	r.PUT("/api/categories/:id", middlewares.AuthFilter, services.UpdateCategory)
-	r.DELETE("/api/categories/:id", middlewares.AuthFilter, services.DeleteCategory)
+	r.PUT("/api/categories/:categoryId", middlewares.AuthFilter, services.UpdateCategory)
+	r.DELETE("/api/categories/:categoryId", middlewares.AuthFilter, services.DeleteCategory)
 }
