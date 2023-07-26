@@ -12,6 +12,7 @@ func InitializeRoutes(port string) {
 
 	UserRoutes(r)
 	CategoryRoutes(r)
+	TransactionRoutes(r)
 
 	log.Fatal(
 		r.Run(port),
