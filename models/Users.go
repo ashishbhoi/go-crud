@@ -12,3 +12,10 @@ type User struct {
 	Categories   []Category    `json:"categories"`
 	Transactions []Transaction `json:"transactions"`
 }
+
+type PublicUser struct {
+	ID        uint   `json:"id"`
+	FirstName string `json:"firstname"`
+	LastName  string `json:"lastname"`
+	Email     string `json:"email"`
+}
