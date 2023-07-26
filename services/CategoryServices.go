@@ -28,7 +28,12 @@ func GetAllCategories(context *gin.Context) {
 
 func GetCategory(context *gin.Context) {
 	context.Header("Content-Type", "application/json")
-
+	var category models.Category
+	categoryId := context.Param("id")
+	user, _ := context.Get("user")
+	models.DB.Where("id = ? AND user_id = ?", categoryId, user.(models.PublicUser).ID).First(&category)
+	displayCategory := categoryModel{category.ID, category.Title, category.Description, 0.0}
+	context.JSON(http.StatusOK, gin.H{"category": displayCategory})
 }
 
 func CreateCategory(context *gin.Context) {
@@ -48,10 +53,36 @@ func CreateCategory(context *gin.Context) {
 
 func UpdateCategory(context *gin.Context) {
 	context.Header("Content-Type", "application/json")
-
+	var category models.Category
+	categoryId := context.Param("id")
+	user, _ := context.Get("user")
+	models.DB.Where("id = ? AND user_id = ?", categoryId, user.(models.PublicUser).ID).First(&category)
+	var newCategory models.Category
+	err := context.BindJSON(&newCategory)
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if newCategory.Title != "" {
+		category.Title = newCategory.Title
+	}
+	if newCategory.Description != "" {
+		category.Description = newCategory.Description
+	}
+	models.DB.Save(&category)
+	context.JSON(http.StatusOK, gin.H{"message": "Category Updated Successfully", "success": true})
 }
 
 func DeleteCategory(context *gin.Context) {
 	context.Header("Content-Type", "application/json")
-
+	var category models.Category
+	categoryId := context.Param("id")
+	user, _ := context.Get("user")
+	models.DB.Where("id = ? AND user_id = ?", categoryId, user.(models.PublicUser).ID).First(&category)
+	if category.ID == 0 {
+		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Category Not Found", "success": false})
+		return
+	}
+	models.DB.Delete(&category)
+	context.JSON(http.StatusOK, gin.H{"message": "Category Deleted Successfully", "success": true})
 }
