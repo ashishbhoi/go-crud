@@ -1,11 +1,16 @@
 package main
 
 import (
-	"github.com/ashishbhoi/go-crud/database"
+	"github.com/ashishbhoi/go-crud/initializers"
+	"github.com/ashishbhoi/go-crud/models"
 	"github.com/ashishbhoi/go-crud/routes"
 )
 
+func init() {
+	initializers.InitializeEnv()
+}
+
 func main() {
-	database.InitialMigration()
-	routes.InitializeRouter(":9000")
+	models.InitializeDatabase()
+	routes.InitializeRoutes(":9000")
 }
