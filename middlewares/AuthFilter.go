@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -46,20 +45,13 @@ func ValidateToken(tokenString string) (models.PublicUser, error) {
 
 func AuthFilter(context *gin.Context) {
 	// Get the token from the header
-	header := context.Request.Header.Get("Authorization")
-	if header == "" {
-		context.AbortWithStatusJSON(401, gin.H{"error": "Authorization header missing"})
+	cookie, err := context.Cookie("Authorization")
+	if err != nil {
+		context.AbortWithStatusJSON(401, gin.H{"error": "Please login"})
 		return
 	}
-	authHeader := strings.Split(context.Request.Header.Get("Authorization"), " ")
-	if len(authHeader) != 2 || authHeader[0] != "Bearer" {
-		context.AbortWithStatusJSON(401, gin.H{"error": "Authorization header format must be Bearer {token}"})
-		return
-	}
-
 	// Validate the token
-	token := authHeader[1]
-	claims, err := ValidateToken(token)
+	claims, err := ValidateToken(cookie)
 
 	if err != nil {
 		context.AbortWithStatusJSON(401, gin.H{"error": err.Error()})
