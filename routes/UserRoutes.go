@@ -8,4 +8,5 @@ import (
 func UserRoutes(r *gin.Engine) {
 	r.POST("/api/users/register", services.CreateUser)
 	r.POST("/api/users/login", services.VerifyUser)
+	r.GET("/api/users/logout", services.LogoutUser)
 }

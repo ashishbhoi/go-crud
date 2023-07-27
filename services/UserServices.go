@@ -59,7 +59,9 @@ func CreateUser(context *gin.Context) {
 		context.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	context.JSON(http.StatusCreated, gin.H{"message": "User Created Successfully", "token": token})
+	context.SetSameSite(http.SameSiteNoneMode)
+	context.SetCookie("Authorization", token, 3600*24*7, "", "", false, true)
+	context.JSON(http.StatusCreated, gin.H{"message": "User Created Successfully and Logged In"})
 }
 
 func VerifyUser(context *gin.Context) {
@@ -79,8 +81,17 @@ func VerifyUser(context *gin.Context) {
 			context.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		context.JSON(http.StatusAccepted, gin.H{"message": "User Verified", "token": token})
+		context.SetSameSite(http.SameSiteNoneMode)
+		context.SetCookie("Authorization", token, 3600*24*7, "", "", false, true)
+		context.JSON(http.StatusAccepted, gin.H{"message": "User Verified and Logged In"})
 	} else {
 		context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "User Not Verified"})
 	}
+}
+
+func LogoutUser(context *gin.Context) {
+	context.Header("Content-Type", "application/json")
+	context.SetSameSite(http.SameSiteNoneMode)
+	context.SetCookie("Authorization", "", -1, "", "", false, true)
+	context.JSON(http.StatusOK, gin.H{"message": "User Logged Out"})
 }
