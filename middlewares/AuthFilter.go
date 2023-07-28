@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"os"
-	"time"
 )
 
 func ValidateToken(tokenString string) (models.PublicUser, error) {
@@ -19,21 +18,13 @@ func ValidateToken(tokenString string) (models.PublicUser, error) {
 	var user models.User
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		err = nil
-
-		// Check if token is expired
-		if float64(time.Now().Unix()) > claims["exp"].(float64) {
-			err = errors.New("token expired")
-		}
-
 		// Check user in database
-
 		models.DB.Where("id = ?", claims["id"]).First(&user)
 		if user.ID == 0 {
-			err = errors.New("invalid token")
+			err = errors.New("invalid login, Please login again")
 		}
-
 	} else {
-		err = errors.New("invalid token")
+		err = errors.New("invalid login, Please login again")
 	}
 	return models.PublicUser{
 		ID:        user.ID,
