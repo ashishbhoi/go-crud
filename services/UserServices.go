@@ -6,7 +6,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"net/http"
 	"os"
-	"time"
 )
 
 type userModel struct {
@@ -22,7 +21,6 @@ func jwtToken(user userModel) (string, error) {
 		"firstname": user.FirstName,
 		"lastname":  user.LastName,
 		"email":     user.Email,
-		"exp":       time.Now().Add(time.Hour * 24).Unix(), // 1 day
 	})
 	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET_KEY")))
 	if err != nil {
