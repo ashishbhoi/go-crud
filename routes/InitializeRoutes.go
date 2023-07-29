@@ -2,10 +2,9 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"log"
 )
 
-func InitializeRoutes(port string) {
+func InitializeRoutes() *gin.Engine {
 	r := gin.Default()
 	r.ForwardedByClientIP = true
 	_ = r.SetTrustedProxies([]string{"127.0.0.1"})
@@ -14,7 +13,5 @@ func InitializeRoutes(port string) {
 	CategoryRoutes(r)
 	TransactionRoutes(r)
 
-	log.Fatal(
-		r.Run(port),
-	)
+	return r
 }
