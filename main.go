@@ -4,6 +4,7 @@ import (
 	"github.com/ashishbhoi/go-crud/initializers"
 	"github.com/ashishbhoi/go-crud/models"
 	"github.com/ashishbhoi/go-crud/routes"
+	"log"
 )
 
 func init() {
@@ -12,5 +13,8 @@ func init() {
 
 func main() {
 	models.InitializeDatabase()
-	routes.InitializeRoutes(":9000")
+	r := routes.InitializeRoutes()
+	log.Fatal(
+		r.Run(":9000"),
+	)
 }
